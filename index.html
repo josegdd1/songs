@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Canciones y Puntuaciones</title>
+  <title>José y Mar puntuando canciones</title>
   <style>
     body {
       font-family: sans-serif;
@@ -54,15 +54,14 @@
       background-color: rgba(255, 255, 255, 0.1);
     }
     .delete-btn {
-      background-color: crimson;
-      padding: 5px 10px;
+      background: none;
       color: white;
+      font-size: 1.2rem;
       border: none;
-      border-radius: 4px;
       cursor: pointer;
     }
     .delete-btn:hover {
-      background-color: darkred;
+      color: #ff6666;
     }
     .edit-input {
       width: 60px;
@@ -90,14 +89,14 @@
     <button onclick="addSong()">Agregar</button>
   </div>
 
-  <button id="sortButton" onclick="toggleSort()">Ordenar por puntuación ⬆️</button>
+  <button id="sortButton" onclick="toggleSort()">Top ⬆️</button>
 
   <table id="songTable">
     <thead>
       <tr>
         <th>Canción</th>
         <th>Puntuación</th>
-        <th>Acciones</th>
+        <th></th> <!-- Sin título para la columna de acciones -->
       </tr>
     </thead>
     <tbody id="songBody"></tbody>
@@ -105,7 +104,7 @@
 
   <script>
     let songs = JSON.parse(localStorage.getItem('songs') || '[]');
-    let sortAsc = true; // Estado de orden
+    let sortAsc = true;
 
     const songBody = document.getElementById('songBody');
     const sortButton = document.getElementById('sortButton');
@@ -113,7 +112,6 @@
     function renderTable() {
       songBody.innerHTML = '';
 
-      // Ordenar antes de mostrar
       const sortedSongs = [...songs].sort((a, b) =>
         sortAsc ? a.score - b.score : b.score - a.score
       );
@@ -130,7 +128,7 @@
               onchange="editScore(${songs.indexOf(song)}, this.value)" />
           </td>
           <td>
-            <button class="delete-btn" onclick="deleteSong(${songs.indexOf(song)})">Eliminar</button>
+            <button class="delete-btn" onclick="deleteSong(${songs.indexOf(song)})">❌</button>
           </td>
         `;
         songBody.appendChild(row);
@@ -143,8 +141,6 @@
       if (name && !isNaN(score)) {
         songs.push({ name, score });
         saveAndRender();
-        document.getElementById('songInput').value = '';
-        document.getElementById('scoreInput').value = '';
       }
     }
 
@@ -160,7 +156,7 @@
 
     function toggleSort() {
       sortAsc = !sortAsc;
-      sortButton.textContent = `Ordenar por puntuación ${sortAsc ? '⬆️' : '⬇️'}`;
+      sortButton.textContent = `Top ${sortAsc ? '⬆️' : '⬇️'}`;
       renderTable();
     }
 
