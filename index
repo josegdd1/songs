@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canciones y Puntuaciones</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 1rem;
+      background: #334C6A;
+      color: white;
+    }
+    h1 {
+      text-align: center;
+    }
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: none;
+    }
+    input {
+      background-color: #49678e;
+      color: white;
+    }
+    input::placeholder {
+      color: #ddd;
+    }
+    button {
+      background-color: #2196f3;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #1976d2;
+    }
+    table {
+      width: 100%;
+      background: transparent;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.75rem;
+      border-bottom: 1px solid white;
+    }
+    tr:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .delete-btn {
+      background-color: crimson;
+      padding: 5px 10px;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background-color: darkred;
+    }
+    .edit-input {
+      width: 60px;
+      background-color: #49678e;
+      color: white;
+      border: none;
+      padding: 5px;
+      border-radius: 4px;
+    }
+    #sortButton {
+      margin-bottom: 1rem;
+      background-color: #4caf50;
+    }
+    #sortButton:hover {
+      background-color: #388e3c;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎶 Canciones y Puntuaciones</h1>
+
+  <div class="form">
+    <input type="text" id="songInput" placeholder="Nombre de la canción" />
+    <input type="number" id="scoreInput" placeholder="Puntuación" />
+    <button onclick="addSong()">Agregar</button>
+  </div>
+
+  <button id="sortButton" onclick="toggleSort()">Ordenar por puntuación ⬆️</button>
+
+  <table id="songTable">
+    <thead>
+      <tr>
+        <th>Canción</th>
+        <th>Puntuación</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="songBody"></tbody>
+  </table>
+
+  <script>
+    let songs = JSON.parse(localStorage.getItem('songs') || '[]');
+    let sortAsc = true; // Estado de orden
+
+    const songBody = document.getElementById('songBody');
+    const sortButton = document.getElementById('sortButton');
+
+    function renderTable() {
+      songBody.innerHTML = '';
+
+      // Ordenar antes de mostrar
+      const sortedSongs = [...songs].sort((a, b) =>
+        sortAsc ? a.score - b.score : b.score - a.score
+      );
+
+      sortedSongs.forEach((song, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${song.name}</td>
+          <td>
+            <input 
+              type="number" 
+              class="edit-input" 
+              value="${song.score}" 
+              onchange="editScore(${songs.indexOf(song)}, this.value)" />
+          </td>
+          <td>
+            <button class="delete-btn" onclick="deleteSong(${songs.indexOf(song)})">Eliminar</button>
+          </td>
+        `;
+        songBody.appendChild(row);
+      });
+    }
+
+    function addSong() {
+      const name = document.getElementById('songInput').value.trim();
+      const score = parseFloat(document.getElementById('scoreInput').value.trim());
+      if (name && !isNaN(score)) {
+        songs.push({ name, score });
+        saveAndRender();
+        document.getElementById('songInput').value = '';
+        document.getElementById('scoreInput').value = '';
+      }
+    }
+
+    function deleteSong(index) {
+      songs.splice(index, 1);
+      saveAndRender();
+    }
+
+    function editScore(index, newScore) {
+      songs[index].score = parseFloat(newScore);
+      saveAndRender(false);
+    }
+
+    function toggleSort() {
+      sortAsc = !sortAsc;
+      sortButton.textContent = `Ordenar por puntuación ${sortAsc ? '⬆️' : '⬇️'}`;
+      renderTable();
+    }
+
+    function saveAndRender(reset = true) {
+      localStorage.setItem('songs', JSON.stringify(songs));
+      renderTable();
+      if (reset) {
+        document.getElementById('songInput').value = '';
+        document.getElementById('scoreInput').value = '';
+      }
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
