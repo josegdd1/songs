@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>José y Mar puntuando canciones</title>
   <style>
     body {
@@ -12,96 +12,122 @@
       color: white;
       padding: 1rem;
     }
-
     h1 {
       text-align: center;
       font-size: 1.5rem;
       margin-bottom: 1.5rem;
     }
-
     .form {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
       margin-bottom: 1.5rem;
     }
-
     input, button {
       padding: 0.75rem;
       font-size: 1rem;
       border-radius: 8px;
       border: none;
     }
-
     input {
       background-color: #49678e;
       color: white;
     }
-
     input::placeholder {
       color: #ccc;
     }
-
     button {
-      background-color: #2196f3;
-      color: white;
+      background-color: white;
+      color: #334C6A;
       font-weight: bold;
+      cursor: pointer;
     }
-
     button:hover {
-      background-color: #1976d2;
+      background-color: #d9d9d9;
     }
-
     #sortButton {
-      background-color: #4caf50;
       margin-bottom: 1rem;
     }
-
-    #sortButton:hover {
-      background-color: #388e3c;
-    }
-
     .song-card {
       position: relative;
       background-color: rgba(255, 255, 255, 0.05);
       border-radius: 12px;
-      padding: 1rem;
+      padding: 1rem 3rem 1rem 1rem;
       margin-bottom: 1rem;
       display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
+      align-items: center;
+      gap: 1rem;
     }
-
     .delete-btn {
       position: absolute;
       top: 8px;
       right: 10px;
       background: none;
-      color: #ff8888;
+      color: white;
       font-size: 1.3rem;
       border: none;
       cursor: pointer;
+      padding: 0;
+      line-height: 1;
     }
-
     .delete-btn:hover {
       color: #ff4d4d;
     }
-
+    .ranking-number {
+      font-size: 1.4rem;
+      font-weight: bold;
+      width: 30px;
+      flex-shrink: 0;
+      color: white;
+    }
     .song-name {
       font-weight: bold;
       font-size: 1.1rem;
       word-break: break-word;
+      flex-grow: 1;
+      color: white;
     }
-
     .song-score {
-      align-self: flex-start;
-      background-color: #2196f3;
-      padding: 0.4rem 0.75rem;
+      background-color: white;
+      color: #334C6A;
       border-radius: 50px;
-      font-weight: bold;
-      font-size: 0.95rem;
+      min-width: 55px;
+      text-align: center;
+      flex-shrink: 0;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 2px;
+      padding: 0.35rem 0.5rem;
     }
-
+    .song-score input {
+      background: transparent;
+      border: none;
+      color: #334C6A;
+      font-weight: bold;
+      font-size: 1rem;
+      width: 25px;
+      text-align: center;
+      padding: 0;
+      margin: 0;
+      outline: none;
+      cursor: text;
+      -moz-appearance: textfield;
+    }
+    .song-score input::-webkit-outer-spin-button,
+    .song-score input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .song-score input[type=number] {
+      -moz-appearance: textfield;
+    }
+    .song-score span {
+      font-size: 0.65rem;
+      font-weight: normal;
+      align-self: flex-end;
+      user-select: none;
+    }
     @media (min-width: 600px) {
       body {
         max-width: 500px;
@@ -115,7 +141,7 @@
 
   <div class="form">
     <input type="text" id="songInput" placeholder="Nombre de la canción" />
-    <input type="number" id="scoreInput" placeholder="Puntuación" />
+    <input type="number" id="scoreInput" placeholder="Puntuación" min="0" max="10" />
     <button onclick="addSong()">Agregar canción</button>
   </div>
 
@@ -137,24 +163,50 @@
         sortAsc ? a.score - b.score : b.score - a.score
       );
 
-      sortedSongs.forEach((song, index) => {
+      const total = sortedSongs.length;
+
+      sortedSongs.forEach((song, i) => {
+        // Conseguimos el índice original en el array sin ordenar
+        const originalIndex = songs.findIndex(s => s.name === song.name && s.score === song.score);
+
+        const rank = sortAsc ? total - i : i + 1;
+
         const card = document.createElement('div');
         card.className = 'song-card';
 
         card.innerHTML = `
-          <button class="delete-btn" onclick="deleteSong(${index})">❌</button>
+          <button class="delete-btn" onclick="deleteSong(${originalIndex})" aria-label="Eliminar canción">×</button>
+          <div class="ranking-number">${rank}.</div>
           <div class="song-name">${song.name}</div>
-          <div class="song-score">${song.score}</div>
+          <div class="song-score">
+            <input type="number" min="0" max="10" value="${song.score}" data-index="${originalIndex}" aria-label="Editar puntuación de ${song.name}" />
+            <span>/10</span>
+          </div>
         `;
 
         songBody.appendChild(card);
+      });
+
+      // Eventos para inputs de score
+      document.querySelectorAll('.song-score input').forEach(input => {
+        input.addEventListener('change', (e) => {
+          let newScore = parseFloat(e.target.value);
+          if (isNaN(newScore) || newScore < 0) newScore = 0;
+          if (newScore > 10) newScore = 10;
+
+          const idx = parseInt(e.target.getAttribute('data-index'));
+          songs[idx].score = newScore;
+          saveAndRender(false);
+        });
       });
     }
 
     function addSong() {
       const name = document.getElementById('songInput').value.trim();
-      const score = parseFloat(document.getElementById('scoreInput').value.trim());
+      let score = parseFloat(document.getElementById('scoreInput').value.trim());
       if (name && !isNaN(score)) {
+        if (score > 10) score = 10;
+        if (score < 0) score = 0;
         songs.push({ name, score });
         saveAndRender();
       }
