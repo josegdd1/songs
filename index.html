@@ -62,8 +62,9 @@
     }
 
     .song-card {
+      position: relative;
       background-color: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
+      border-radius: 12px;
       padding: 1rem;
       margin-bottom: 1rem;
       display: flex;
@@ -71,33 +72,34 @@
       gap: 0.5rem;
     }
 
-    .song-name {
-      font-weight: bold;
-      font-size: 1.1rem;
-    }
-
-    .song-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .edit-input {
-      width: 70px;
-      padding: 0.4rem;
-      border-radius: 6px;
-      border: none;
-      background-color: #49678e;
-      color: white;
-    }
-
     .delete-btn {
+      position: absolute;
+      top: 8px;
+      right: 10px;
       background: none;
-      color: #ff6666;
+      color: #ff8888;
       font-size: 1.3rem;
       border: none;
       cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      color: #ff4d4d;
+    }
+
+    .song-name {
+      font-weight: bold;
+      font-size: 1.1rem;
+      word-break: break-word;
+    }
+
+    .song-score {
+      align-self: flex-start;
+      background-color: #2196f3;
+      padding: 0.4rem 0.75rem;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 0.95rem;
     }
 
     @media (min-width: 600px) {
@@ -140,16 +142,11 @@
         card.className = 'song-card';
 
         card.innerHTML = `
+          <button class="delete-btn" onclick="deleteSong(${index})">❌</button>
           <div class="song-name">${song.name}</div>
-          <div class="song-actions">
-            <input 
-              type="number" 
-              class="edit-input" 
-              value="${song.score}" 
-              onchange="editScore(${songs.indexOf(song)}, this.value)" />
-            <button class="delete-btn" onclick="deleteSong(${songs.indexOf(song)})">❌</button>
-          </div>
+          <div class="song-score">${song.score}</div>
         `;
+
         songBody.appendChild(card);
       });
     }
@@ -166,11 +163,6 @@
     function deleteSong(index) {
       songs.splice(index, 1);
       saveAndRender();
-    }
-
-    function editScore(index, newScore) {
-      songs[index].score = parseFloat(newScore);
-      saveAndRender(false);
     }
 
     function toggleSort() {
