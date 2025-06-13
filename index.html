@@ -6,101 +6,120 @@
   <title>José y Mar puntuando canciones</title>
   <style>
     body {
-      font-family: sans-serif;
-      padding: 1rem;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
       background: #334C6A;
       color: white;
+      padding: 1rem;
     }
+
     h1 {
       text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
     }
+
     .form {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-bottom: 1rem;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
     }
+
     input, button {
-      padding: 0.5rem;
+      padding: 0.75rem;
       font-size: 1rem;
-      border-radius: 4px;
+      border-radius: 8px;
       border: none;
     }
+
     input {
       background-color: #49678e;
       color: white;
     }
+
     input::placeholder {
-      color: #ddd;
+      color: #ccc;
     }
+
     button {
       background-color: #2196f3;
       color: white;
-      cursor: pointer;
+      font-weight: bold;
     }
+
     button:hover {
       background-color: #1976d2;
     }
-    table {
-      width: 100%;
-      background: transparent;
-      border-collapse: collapse;
+
+    #sortButton {
+      background-color: #4caf50;
+      margin-bottom: 1rem;
     }
-    th, td {
-      padding: 0.75rem;
-      border-bottom: 1px solid white;
+
+    #sortButton:hover {
+      background-color: #388e3c;
     }
-    tr:hover {
-      background-color: rgba(255, 255, 255, 0.1);
+
+    .song-card {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
     }
+
+    .song-name {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .song-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .edit-input {
+      width: 70px;
+      padding: 0.4rem;
+      border-radius: 6px;
+      border: none;
+      background-color: #49678e;
+      color: white;
+    }
+
     .delete-btn {
       background: none;
-      color: white;
-      font-size: 1.2rem;
+      color: #ff6666;
+      font-size: 1.3rem;
       border: none;
       cursor: pointer;
     }
-    .delete-btn:hover {
-      color: #ff6666;
-    }
-    .edit-input {
-      width: 60px;
-      background-color: #49678e;
-      color: white;
-      border: none;
-      padding: 5px;
-      border-radius: 4px;
-    }
-    #sortButton {
-      margin-bottom: 1rem;
-      background-color: #4caf50;
-    }
-    #sortButton:hover {
-      background-color: #388e3c;
+
+    @media (min-width: 600px) {
+      body {
+        max-width: 500px;
+        margin: auto;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>José y Mar puntuando canciones👩🏽‍❤️‍👨🏻</h1>
+  <h1>José y Mar puntuando canciones 👩🏽‍❤️‍👨🏻</h1>
 
   <div class="form">
     <input type="text" id="songInput" placeholder="Nombre de la canción" />
     <input type="number" id="scoreInput" placeholder="Puntuación" />
-    <button onclick="addSong()">Agregar</button>
+    <button onclick="addSong()">Agregar canción</button>
   </div>
 
   <button id="sortButton" onclick="toggleSort()">Top ⬆️</button>
 
-  <table id="songTable">
-    <thead>
-      <tr>
-        <th>Canción</th>
-        <th>Puntuación</th>
-        <th></th> <!-- Sin título para la columna de acciones -->
-      </tr>
-    </thead>
-    <tbody id="songBody"></tbody>
-  </table>
+  <div id="songBody"></div>
 
   <script>
     let songs = JSON.parse(localStorage.getItem('songs') || '[]');
@@ -117,21 +136,21 @@
       );
 
       sortedSongs.forEach((song, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${song.name}</td>
-          <td>
+        const card = document.createElement('div');
+        card.className = 'song-card';
+
+        card.innerHTML = `
+          <div class="song-name">${song.name}</div>
+          <div class="song-actions">
             <input 
               type="number" 
               class="edit-input" 
               value="${song.score}" 
               onchange="editScore(${songs.indexOf(song)}, this.value)" />
-          </td>
-          <td>
             <button class="delete-btn" onclick="deleteSong(${songs.indexOf(song)})">❌</button>
-          </td>
+          </div>
         `;
-        songBody.appendChild(row);
+        songBody.appendChild(card);
       });
     }
 
