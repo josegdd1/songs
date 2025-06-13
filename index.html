@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>José y Mar puntuando canciones</title>
   <style>
     body {
@@ -12,122 +12,122 @@
       color: white;
       padding: 1rem;
     }
+
     h1 {
       text-align: center;
       font-size: 1.5rem;
       margin-bottom: 1.5rem;
     }
+
     .form {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
       margin-bottom: 1.5rem;
     }
+
     input, button {
       padding: 0.75rem;
       font-size: 1rem;
       border-radius: 8px;
       border: none;
     }
+
     input {
       background-color: #49678e;
       color: white;
     }
+
     input::placeholder {
       color: #ccc;
     }
+
     button {
       background-color: white;
       color: #334C6A;
       font-weight: bold;
-      cursor: pointer;
     }
+
     button:hover {
-      background-color: #d9d9d9;
+      opacity: 0.9;
     }
+
     #sortButton {
       margin-bottom: 1rem;
     }
+
     .song-card {
       position: relative;
       background-color: rgba(255, 255, 255, 0.05);
       border-radius: 12px;
-      padding: 1rem 3rem 1rem 1rem;
+      padding: 1rem;
       margin-bottom: 1rem;
       display: flex;
-      align-items: center;
-      gap: 1rem;
+      flex-direction: column;
+      gap: 0.5rem;
     }
+
     .delete-btn {
       position: absolute;
       top: 8px;
       right: 10px;
       background: none;
       color: white;
-      font-size: 1.3rem;
+      font-size: 1rem;
       border: none;
       cursor: pointer;
-      padding: 0;
-      line-height: 1;
     }
+
     .delete-btn:hover {
-      color: #ff4d4d;
+      opacity: 0.8;
     }
+
     .ranking-number {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: bold;
-      width: 30px;
-      flex-shrink: 0;
-      color: white;
     }
+
+    .song-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     .song-name {
       font-weight: bold;
       font-size: 1.1rem;
       word-break: break-word;
-      flex-grow: 1;
-      color: white;
+      flex: 1;
     }
+
     .song-score {
       background-color: white;
       color: #334C6A;
+      padding: 0.4rem 0.75rem;
       border-radius: 50px;
-      min-width: 55px;
-      text-align: center;
-      flex-shrink: 0;
+      font-weight: bold;
+      font-size: 1rem;
       display: flex;
       align-items: baseline;
-      justify-content: center;
       gap: 2px;
-      padding: 0.35rem 0.5rem;
     }
-    .song-score input {
-      background: transparent;
+
+    .score-max {
+      font-size: 0.75rem;
+      opacity: 0.8;
+    }
+
+    .editable-score {
+      background: none;
       border: none;
       color: #334C6A;
       font-weight: bold;
       font-size: 1rem;
-      width: 25px;
-      text-align: center;
       padding: 0;
       margin: 0;
-      outline: none;
-      cursor: text;
-      -moz-appearance: textfield;
+      text-align: right;
     }
-    .song-score input::-webkit-outer-spin-button,
-    .song-score input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    .song-score input[type=number] {
-      -moz-appearance: textfield;
-    }
-    .song-score span {
-      font-size: 0.65rem;
-      font-weight: normal;
-      align-self: flex-end;
-      user-select: none;
-    }
+
     @media (min-width: 600px) {
       body {
         max-width: 500px;
@@ -141,7 +141,7 @@
 
   <div class="form">
     <input type="text" id="songInput" placeholder="Nombre de la canción" />
-    <input type="number" id="scoreInput" placeholder="Puntuación" min="0" max="10" />
+    <input type="number" id="scoreInput" placeholder="Puntuación" />
     <button onclick="addSong()">Agregar canción</button>
   </div>
 
@@ -151,7 +151,7 @@
 
   <script>
     let songs = JSON.parse(localStorage.getItem('songs') || '[]');
-    let sortAsc = true;
+    let sortMode = 'desc'; // 'asc', 'desc', 'recent'
 
     const songBody = document.getElementById('songBody');
     const sortButton = document.getElementById('sortButton');
@@ -159,67 +159,74 @@
     function renderTable() {
       songBody.innerHTML = '';
 
-      const sortedSongs = [...songs].sort((a, b) =>
-        sortAsc ? a.score - b.score : b.score - a.score
-      );
+      let sortedSongs = [...songs];
+      if (sortMode === 'asc') {
+        sortedSongs.sort((a, b) => a.score - b.score);
+      } else if (sortMode === 'desc') {
+        sortedSongs.sort((a, b) => b.score - a.score);
+      } else if (sortMode === 'recent') {
+        sortedSongs.sort((a, b) => b.timestamp - a.timestamp);
+      }
 
       const total = sortedSongs.length;
 
       sortedSongs.forEach((song, i) => {
-        // Conseguimos el índice original en el array sin ordenar
-        const originalIndex = songs.findIndex(s => s.name === song.name && s.score === song.score);
-
-        const rank = sortAsc ? total - i : i + 1;
+        const rank = sortMode === 'asc' ? total - i :
+                     sortMode === 'desc' ? i + 1 :
+                     ''; // no número en modo reciente
 
         const card = document.createElement('div');
         card.className = 'song-card';
 
         card.innerHTML = `
-          <button class="delete-btn" onclick="deleteSong(${originalIndex})" aria-label="Eliminar canción">×</button>
-          <div class="ranking-number">${rank}.</div>
-          <div class="song-name">${song.name}</div>
-          <div class="song-score">
-            <input type="number" min="0" max="10" value="${song.score}" data-index="${originalIndex}" aria-label="Editar puntuación de ${song.name}" />
-            <span>/10</span>
+          <button class="delete-btn" onclick="deleteSong(${songs.indexOf(song)})">✖</button>
+          <div class="song-header">
+            ${rank ? `<div class="ranking-number">${rank}.</div>` : ''}
+            <div class="song-name">${song.name}</div>
+            <div class="song-score">
+              <input type="number" min="0" max="10" value="${song.score}" class="editable-score" onchange="updateScore(${songs.indexOf(song)}, this.value)" />
+              <span class="score-max">/10</span>
+            </div>
           </div>
         `;
 
         songBody.appendChild(card);
       });
-
-      // Eventos para inputs de score
-      document.querySelectorAll('.song-score input').forEach(input => {
-        input.addEventListener('change', (e) => {
-          let newScore = parseFloat(e.target.value);
-          if (isNaN(newScore) || newScore < 0) newScore = 0;
-          if (newScore > 10) newScore = 10;
-
-          const idx = parseInt(e.target.getAttribute('data-index'));
-          songs[idx].score = newScore;
-          saveAndRender(false);
-        });
-      });
     }
 
     function addSong() {
       const name = document.getElementById('songInput').value.trim();
-      let score = parseFloat(document.getElementById('scoreInput').value.trim());
+      const score = parseFloat(document.getElementById('scoreInput').value.trim());
       if (name && !isNaN(score)) {
-        if (score > 10) score = 10;
-        if (score < 0) score = 0;
-        songs.push({ name, score });
+        songs.push({ name, score, timestamp: Date.now() });
         saveAndRender();
       }
     }
 
     function deleteSong(index) {
       songs.splice(index, 1);
-      saveAndRender();
+      saveAndRender(false);
+    }
+
+    function updateScore(index, newScore) {
+      const parsedScore = parseFloat(newScore);
+      if (!isNaN(parsedScore)) {
+        songs[index].score = parsedScore;
+        saveAndRender(false);
+      }
     }
 
     function toggleSort() {
-      sortAsc = !sortAsc;
-      sortButton.textContent = `Top ${sortAsc ? '⬆️' : '⬇️'}`;
+      if (sortMode === 'desc') {
+        sortMode = 'asc';
+        sortButton.textContent = 'Top ⬇️';
+      } else if (sortMode === 'asc') {
+        sortMode = 'recent';
+        sortButton.textContent = 'Recientes 🕒';
+      } else {
+        sortMode = 'desc';
+        sortButton.textContent = 'Top ⬆️';
+      }
       renderTable();
     }
 
