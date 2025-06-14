@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>José y Mar puntuando canciones</title>
   <style>
     body {
@@ -12,62 +12,52 @@
       color: white;
       padding: 1rem;
     }
-
     h1 {
       text-align: center;
       font-size: 1.5rem;
       margin-bottom: 1.5rem;
     }
-
     .form {
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
       margin-bottom: 1.5rem;
     }
-
     input, button {
       padding: 0.75rem;
       font-size: 1rem;
       border-radius: 8px;
       border: none;
     }
-
     input {
       background-color: #49678e;
       color: white;
     }
-
     input::placeholder {
       color: #ccc;
     }
-
     button {
       background-color: white;
       color: #334C6A;
       font-weight: bold;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #d9d9d9;
     }
-
     #sortButton {
       margin-bottom: 1rem;
     }
-
     .song-card {
       position: relative;
       background-color: rgba(255, 255, 255, 0.05);
       border-radius: 12px;
-      padding: 1rem 3rem 1rem 1rem; /* espacio a la derecha para la X */
+      padding: 1rem 3rem 1rem 1rem;
       margin-bottom: 1rem;
       display: flex;
       align-items: center;
       gap: 1rem;
     }
-
     .delete-btn {
       position: absolute;
       top: 8px;
@@ -80,11 +70,9 @@
       padding: 0;
       line-height: 1;
     }
-
     .delete-btn:hover {
       color: #ff4d4d;
     }
-
     .ranking-number {
       font-size: 1.4rem;
       font-weight: bold;
@@ -92,7 +80,6 @@
       flex-shrink: 0;
       color: white;
     }
-
     .song-name {
       font-weight: bold;
       font-size: 1.1rem;
@@ -100,7 +87,6 @@
       flex-grow: 1;
       color: white;
     }
-
     .song-score {
       background-color: white;
       color: #334C6A;
@@ -114,7 +100,6 @@
       gap: 2px;
       padding: 0.35rem 0.5rem;
     }
-
     .song-score input {
       background: transparent;
       border: none;
@@ -129,7 +114,6 @@
       cursor: text;
       -moz-appearance: textfield;
     }
-    /* Eliminar flechas en input number en Chrome, Firefox y Edge */
     .song-score input::-webkit-outer-spin-button,
     .song-score input::-webkit-inner-spin-button {
       -webkit-appearance: none;
@@ -138,14 +122,12 @@
     .song-score input[type=number] {
       -moz-appearance: textfield;
     }
-
     .song-score span {
       font-size: 0.65rem;
       font-weight: normal;
       align-self: flex-end;
       user-select: none;
     }
-
     @media (min-width: 600px) {
       body {
         max-width: 500px;
@@ -184,17 +166,20 @@
       const total = sortedSongs.length;
 
       sortedSongs.forEach((song, i) => {
+        // Conseguimos el índice original en el array sin ordenar
+        const originalIndex = songs.findIndex(s => s.name === song.name && s.score === song.score);
+
         const rank = sortAsc ? total - i : i + 1;
 
         const card = document.createElement('div');
         card.className = 'song-card';
 
         card.innerHTML = `
-          <button class="delete-btn" onclick="deleteSong(${i})" aria-label="Eliminar canción">×</button>
+          <button class="delete-btn" onclick="deleteSong(${originalIndex})" aria-label="Eliminar canción">×</button>
           <div class="ranking-number">${rank}.</div>
           <div class="song-name">${song.name}</div>
           <div class="song-score">
-            <input type="number" min="0" max="10" value="${song.score}" data-index="${i}" aria-label="Editar puntuación de ${song.name}" />
+            <input type="number" min="0" max="10" value="${song.score}" data-index="${originalIndex}" aria-label="Editar puntuación de ${song.name}" />
             <span>/10</span>
           </div>
         `;
@@ -202,7 +187,7 @@
         songBody.appendChild(card);
       });
 
-      // Añadir evento para actualizar la puntuación cuando cambie el input
+      // Eventos para inputs de score
       document.querySelectorAll('.song-score input').forEach(input => {
         input.addEventListener('change', (e) => {
           let newScore = parseFloat(e.target.value);
